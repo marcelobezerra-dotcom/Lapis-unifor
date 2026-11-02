@@ -21,7 +21,7 @@
 | Responsável pela elaboração | Equipe de alunos — exemplo preparado para orientação docente |
 | Responsável pela aprovação formal | Direção da DRI (nome e assinatura a confirmar) — **aprovação pendente** |
 | Situação | Rascunho didático, não validado |
-| Versão e data | 2.3 — 02/11/2026 |
+| Versão e data | 2.4 — 02/11/2026 |
 
 | Data | Versão | Descrição da alteração | Autor |
 | --- | --- | --- | --- |
@@ -32,6 +32,7 @@
 | 02/11/2026 | 2.1 | Revisão da documentação pelo professor | Revisão do professor |
 | 02/11/2026 | 2.2 | Detalhamento da definição, gestão, cálculo e governança dos indicadores de internacionalização | Exemplo didático com apoio de IA |
 | 02/11/2026 | 2.3 | Organização em módulos funcionais, diagramas de casos de uso por módulo e inclusão de proposta de logomarca | Exemplo didático com apoio de IA |
+| 02/11/2026 | 2.4 | Conversão dos diagramas de casos de uso para notação UML em PlantUML | Exemplo didático com apoio de IA |
 
 ## 1. Objetivo
 
@@ -276,7 +277,7 @@ flowchart LR
 
 ### 7.3 Decomposição funcional do SINAIZ em módulos
 
-Para tornar os casos de uso legíveis, o sistema foi dividido em **seis módulos funcionais**. A divisão é lógica e **não implica** seis aplicações independentes ou microsserviços. Os atores e as permissões permanecem os mesmos definidos na seção 5. Os diagramas abaixo são **representações conceituais em Mermaid**, com atores, fronteiras e casos de uso; não pretendem substituir uma especificação UML formal.
+Para tornar os casos de uso legíveis, o sistema foi dividido em **seis módulos funcionais**. A divisão é lógica e **não implica** seis aplicações independentes ou microsserviços. Os atores e as permissões permanecem os mesmos definidos na seção 5.
 
 | Módulo | Responsabilidade | Funcionalidades | Atores principais |
 | --- | --- | --- | --- |
@@ -307,145 +308,179 @@ flowchart LR
 
 ### 7.5 Diagramas de casos de uso por módulo
 
-**Convenção didática:** os retângulos externos representam atores; as formas arredondadas representam casos de uso; cada subgrafo delimita um módulo. Os IDs `CDU-xx` são os mesmos do catálogo da seção 6.2. Para uma notação UML rigorosa, os alunos poderão transpor os diagramas para PlantUML.
+**Notação:** os diagramas usam a sintaxe UML de casos de uso do PlantUML: atores e sistemas externos ficam fora da fronteira do SINAIZ; os casos de uso ficam dentro da fronteira do módulo representado. Os módulos são recortes lógicos do mesmo sistema, não aplicações independentes. Os IDs `CDU-xx` são os mesmos do catálogo da seção 6.2. Os relacionamentos `include` e `extend` só devem ser acrescentados quando confirmados pelos fluxos detalhados.
 
 #### 7.5.1 M01 — Docentes e Currículos
 
-```mermaid
-flowchart LR
-  G[Gestor] --> C4
-  A[Analista] --> C4
-  D[Docente] --> C4
-  G --> C5
-  A --> C5
-  D --> C5
-  G --> C6
-  A --> C6
-  D --> C6
-  G --> C8
-  A --> C8
-  D --> C8
-  U[UOL] --> C1
-  U --> C2
-  L[Lattes Extrator] --> C3
-  T[Administrador Técnico] --> C1
-  T --> C3
-  subgraph M01["M01 — Docentes e Currículos"]
-    C1(["CDU-01 Sincronizar vínculos"])
-    C2(["CDU-02 Vincular ID Lattes"])
-    C3(["CDU-03 Sincronizar currículos"])
-    C4(["CDU-04 Pesquisar docentes"])
-    C5(["CDU-05 Consultar formação"])
-    C6(["CDU-06 Pesquisar publicações"])
-    C7(["CDU-07 Classificar internacionalização"])
-    C8(["CDU-08 Consultar histórico"])
-  end
-  C6 -.->|usa classificação| C7
+```plantuml
+left to right direction
+actor "Gestor de Internacionalização" as G
+actor "Analista de Internacionalização" as A
+actor Docente as D
+actor "Administrador Técnico" as T
+actor UOL as U <<sistema externo>>
+actor "Lattes Extrator/CNPq" as L <<sistema externo>>
+
+rectangle "SINAIZ — M01: Docentes e Currículos" {
+  usecase "CDU-01\nSincronizar vínculos" as CDU01
+  usecase "CDU-02\nVincular ID Lattes" as CDU02
+  usecase "CDU-03\nSincronizar currículos" as CDU03
+  usecase "CDU-04\nPesquisar docentes" as CDU04
+  usecase "CDU-05\nConsultar formação" as CDU05
+  usecase "CDU-06\nPesquisar publicações" as CDU06
+  usecase "CDU-07\nClassificar internacionalização" as CDU07
+  usecase "CDU-08\nConsultar histórico" as CDU08
+}
+
+U -- CDU01
+U -- CDU02
+L -- CDU03
+T -- CDU01
+T -- CDU03
+G -- CDU04
+A -- CDU04
+D -- CDU04
+G -- CDU05
+A -- CDU05
+D -- CDU05
+G -- CDU06
+A -- CDU06
+D -- CDU06
+G -- CDU08
+A -- CDU08
+D -- CDU08
+CDU06 ..> CDU07 : <<include>>
 ```
 
 #### 7.5.2 M02 — Oportunidades Científicas
 
-```mermaid
-flowchart LR
-  G[Gestor] --> C9
-  A[Analista] --> C9
-  G --> C10
-  A --> C10
-  G --> C12
-  A --> C12
-  D[Docente] --> C12
-  R[ResearchRadar] --> C10
-  subgraph M02["M02 — Oportunidades Científicas"]
-    C9(["CDU-09 Cadastrar e alterar oportunidade"])
-    C10(["CDU-10 Importar e validar oportunidades"])
-    C11(["CDU-11 Detectar duplicidades"])
-    C12(["CDU-12 Pesquisar oportunidades"])
-  end
-  C9 -.->|verifica| C11
-  C10 -.->|verifica| C11
+```plantuml
+left to right direction
+actor "Gestor de Internacionalização" as G
+actor "Analista de Internacionalização" as A
+actor Docente as D
+actor ResearchRadar as R <<sistema externo>>
+
+rectangle "SINAIZ — M02: Oportunidades Científicas" {
+  usecase "CDU-09\nCadastrar e alterar oportunidade" as CDU09
+  usecase "CDU-10\nImportar e validar oportunidades" as CDU10
+  usecase "CDU-11\nDetectar duplicidades" as CDU11
+  usecase "CDU-12\nPesquisar oportunidades" as CDU12
+}
+
+G -- CDU09
+A -- CDU09
+G -- CDU10
+A -- CDU10
+R -- CDU10
+G -- CDU12
+A -- CDU12
+D -- CDU12
+CDU09 ..> CDU11 : <<include>>
+CDU10 ..> CDU11 : <<include>>
 ```
 
 #### 7.5.3 M03 — Indicadores de Internacionalização
 
-```mermaid
-flowchart LR
-  G[Gestor] --> C20
-  G --> C21
-  G --> C22
-  G --> C23
-  G --> C24
-  G --> C14
-  G --> C13
-  A[Analista] --> C13
-  D[Docente] --> C13
-  A --> C25
-  D --> C25
-  G --> C25
-  G --> C26
-  A --> C26
-  D --> C26
-  subgraph M03["M03 — Indicadores de Internacionalização"]
-    C13(["CDU-13 Consultar e exportar indicadores"])
-    C14(["CDU-14 Configurar indicador guiado"])
-    C20(["CDU-20 Manter catálogo"])
-    C21(["CDU-21 Definir indicador e prévia"])
-    C22(["CDU-22 Definir regras de cálculo"])
-    C23(["CDU-23 Versionar e ativar"])
-    C24(["CDU-24 Definir metas"])
-    C25(["CDU-25 Consultar painéis"])
-    C26(["CDU-26 Verificar qualidade do resultado"])
-  end
-  C14 -.->|orienta| C21
-  C21 -.->|utiliza| C22
-  C23 -.->|publica| C20
+```plantuml
+left to right direction
+actor "Gestor de Internacionalização" as G
+actor "Analista de Internacionalização" as A
+actor Docente as D
+
+rectangle "SINAIZ — M03: Indicadores de Internacionalização" {
+  usecase "CDU-13\nConsultar e exportar indicadores" as CDU13
+  usecase "CDU-14\nConfigurar indicador guiado" as CDU14
+  usecase "CDU-20\nManter catálogo" as CDU20
+  usecase "CDU-21\nDefinir indicador e prévia" as CDU21
+  usecase "CDU-22\nDefinir regras de cálculo" as CDU22
+  usecase "CDU-23\nVersionar e ativar" as CDU23
+  usecase "CDU-24\nDefinir metas" as CDU24
+  usecase "CDU-25\nConsultar painéis" as CDU25
+  usecase "CDU-26\nVerificar qualidade do resultado" as CDU26
+}
+
+G -- CDU13
+A -- CDU13
+D -- CDU13
+G -- CDU14
+G -- CDU20
+G -- CDU21
+G -- CDU22
+G -- CDU23
+G -- CDU24
+G -- CDU25
+A -- CDU25
+D -- CDU25
+G -- CDU26
+A -- CDU26
+D -- CDU26
 ```
 
-*Nota:* CDU-14 representa a experiência de construção guiada; CDU-21 detalha a definição e a prévia. A fronteira exata entre esses dois casos de uso deverá ser refinada na especificação para evitar redundância.
+*Nota:* CDU-14 representa a experiência de construção guiada; CDU-21 detalha a definição e a prévia. A fronteira exata entre esses dois casos de uso deverá ser refinada na especificação para evitar redundância. Os relacionamentos entre esses casos não foram representados como `include` ou `extend`, pois precisam ser confirmados na especificação dos fluxos.
 
 #### 7.5.4 M04 — Qualidade de Dados e Notificações
 
-```mermaid
-flowchart LR
-  G[Gestor] --> C15
-  A[Analista] --> C15
-  G --> C16
-  A --> C16
-  subgraph M04["M04 — Qualidade de Dados e Notificações"]
-    C15(["CDU-15 Tratar inconsistências"])
-    C16(["CDU-16 Notificar docente e registrar reenvios"])
-  end
-  C15 -.->|pode solicitar| C16
-  C16 --> E[Serviço de e-mail institucional]
+```plantuml
+left to right direction
+actor "Gestor de Internacionalização" as G
+actor "Analista de Internacionalização" as A
+actor "Serviço de e-mail institucional" as E <<sistema externo>>
+
+rectangle "SINAIZ — M04: Qualidade de Dados e Notificações" {
+  usecase "CDU-15\nTratar inconsistências" as CDU15
+  usecase "CDU-16\nNotificar docente e registrar reenvios" as CDU16
+}
+
+G -- CDU15
+A -- CDU15
+G -- CDU16
+A -- CDU16
+E -- CDU16
 ```
 
 #### 7.5.5 M05 — Identidade e Controle de Acesso
 
-```mermaid
-flowchart LR
-  G[Gestor] --> C17
-  A[Analista] --> C17
-  D[Docente] --> C17
-  T[Administrador Técnico] --> C17
-  T --> C18
-  I[Identidade institucional Google] --> C17
-  U[UOL] --> C17
-  subgraph M05["M05 — Identidade e Controle de Acesso"]
-    C17(["CDU-17 Autenticar e reconhecer vínculo"])
-    C18(["CDU-18 Gerenciar perfis e permissões"])
-  end
+```plantuml
+left to right direction
+actor "Gestor de Internacionalização" as G
+actor "Analista de Internacionalização" as A
+actor Docente as D
+actor "Administrador Técnico" as T
+actor "Identidade institucional Google" as I <<sistema externo>>
+actor UOL as U <<sistema externo>>
+
+rectangle "SINAIZ — M05: Identidade e Controle de Acesso" {
+  usecase "CDU-17\nAutenticar e reconhecer vínculo" as CDU17
+  usecase "CDU-18\nGerenciar perfis e permissões" as CDU18
+}
+
+G -- CDU17
+A -- CDU17
+D -- CDU17
+T -- CDU17
+I -- CDU17
+U -- CDU17
+T -- CDU18
 ```
 
 #### 7.5.6 M06 — Operação e Integrações
 
-```mermaid
-flowchart LR
-  T[Administrador Técnico] --> C19
-  subgraph M06["M06 — Operação e Integrações"]
-    C19(["CDU-19 Monitorar integrações, logs e reprocessamentos"])
-  end
-  U[UOL] -.->|eventos de sincronização| C19
-  L[Lattes Extrator] -.->|eventos de importação| C19
-  R[ResearchRadar] -.->|eventos de importação| C19
+```plantuml
+left to right direction
+actor "Administrador Técnico" as T
+actor UOL as U <<sistema externo>>
+actor "Lattes Extrator/CNPq" as L <<sistema externo>>
+actor ResearchRadar as R <<sistema externo>>
+
+rectangle "SINAIZ — M06: Operação e Integrações" {
+  usecase "CDU-19\nMonitorar integrações, logs e reprocessamentos" as CDU19
+}
+
+T -- CDU19
+U -- CDU19
+L -- CDU19
+R -- CDU19
 ```
 
 ### 7.6 Orientações para a modelagem dos alunos
@@ -455,7 +490,7 @@ flowchart LR
 3. **Não confundir** ator externo com usuário humano: UOL, Lattes, ResearchRadar e identidade institucional são sistemas externos.
 4. **Autenticação e autorização** são responsabilidades transversais; não é necessário desenhar o login em todos os diagramas.
 5. **Importação agendada** é um comportamento automático do sistema, embora a fonte externa participe da integração; os fluxos de agendamento e falha serão detalhados nos CDUs.
-6. As ligações pontilhadas `usa`, `verifica` e `pode solicitar` indicam dependências conceituais; não devem ser interpretadas automaticamente como relações UML `include` ou `extend`.
+6. Os relacionamentos `include` e `extend` não devem ser inferidos de dependências conceituais; acrescentá-los somente após confirmar os fluxos e a obrigatoriedade ou condição de cada comportamento.
 
 ## 8. Condições Gerais da Demanda
 
